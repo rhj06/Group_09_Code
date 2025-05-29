@@ -1,24 +1,29 @@
-// Step 1: Import the pg library
-const { Pool } = require('pg');
+// Step 1: Import the PostgreSQL Library
+const { Client } = require('pg');
 require('dotenv').config();
 
-// Step 2: Create a connection pool
-const pool = new Pool({
-  host: process.env.DB_HOST,       // e.g. 'localhost'
-  user: process.env.DB_USER,       // e.g. 'postgres'
-  password: process.env.DB_PASSWORD, // your postgres password
-  database: process.env.DB_NAME,   // e.g. 'group09db'
-  port: process.env.DB_PORT || 5432, // default PostgreSQL port
+// Step 2: Create a Database Client
+// A single client connection is created using the Client method.
+const client = new Client({
+  host: process.env.DB_HOST,              // localhost
+  user: process.env.DB_USER,              // Database username
+  password: process.env.DB_PASSWORD,      // Database password
+  database: process.env.DB_NAME,          // Name of the database to connect to
+  port: process.env.DB_PORT,              // Port number: 5432
 });
 
-// Step 3: Test the connection
-pool.connect((err, client, release) => {
+// Step 3: Connect to the Database
+// Attempt to establish the connection to the PostgreSQL database
+client.connect(err => {
   if (err) {
-    return console.error('Database connection failed:', err.stack);
+    // If there is an error, log it and stop further attempts
+    console.error('Database connection failed:', err.stack);
+  } else {
+    // If the connection is successful, confirm in the console
+    console.log('Connected to the PostgreSQL database.');
   }
-  console.log('Connected to the PostgreSQL database.');
-  release(); // release the client back to the pool
 });
 
-// Step 4: Export the pool
-module.exports = pool;
+// Step 4: Export the Connection
+// Export the client object so it can be used in other parts of the application
+module.exports = client;

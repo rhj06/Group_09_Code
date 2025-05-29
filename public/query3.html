@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Query 3 - Customer Vehicle Info</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.0/dist/yeti/bootstrap.min.css">
+    <script>
+        // Fetch customers for dropdown
+        window.onload = () => {
+            fetch('/query3/customers')
+                .then(res => res.json())
+                .then(customers => {
+                    const dropdown = document.getElementById('customerSelect');
+                    const allOption = document.createElement('option');
+                    allOption.value = '';
+                    allOption.textContent = '-- All Customers --';
+                    dropdown.appendChild(allOption);
+
+                    customers.forEach(c => {
+                        const option = document.createElement('option');
+                        option.value = c.customer_id;
+                        option.textContent = c.customer_name;
+                        dropdown.appendChild(option);
+                    });
+                });
+
+            // Auto-submit on change
+            document.getElementById('customerSelect').addEventListener('change', function () {
+                const customerId = this.value;
+                const url = customerId ? `/query3?customerId=${customerId}` : '/query3';
+                window.location.href = url;
+            });
+        };
+    </script>
+</head>
+
+<body>
+    <div class="container mt-5">
+        <h2 class="text-center mb-4">Customer Vehicle Lookup</h2>
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <label for="customerSelect" class="form-label">Select a Customer:</label>
+                <select class="form-select" id="customerSelect">
+                    <option selected disabled>Loading...</option>
+                </select>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
