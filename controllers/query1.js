@@ -23,12 +23,10 @@ const getMaintenanceHistory = (req, res) => {
   // Step 3: Execute the query
   db.query(query, (err, results) => {
     if (err) {
-      // Handle Errors
       console.error('Error retrieving maintenance records:', err);
-      res.status(500).send('Error retrieving maintenance records');
-    } else {
-      res.json(results);
+      return res.status(500).json({ error: 'Database query failed' });
     }
+    res.json(results.rows);
   });
 };
 

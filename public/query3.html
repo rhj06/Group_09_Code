@@ -2,52 +2,100 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Query 3 - Customer Vehicle Info</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.0/dist/yeti/bootstrap.min.css">
-    <script>
-        // Fetch customers for dropdown
-        window.onload = () => {
-            fetch('/query3/customers')
-                .then(res => res.json())
-                .then(customers => {
-                    const dropdown = document.getElementById('customerSelect');
-                    const allOption = document.createElement('option');
-                    allOption.value = '';
-                    allOption.textContent = '-- All Customers --';
-                    dropdown.appendChild(allOption);
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Query 3 - Customer Vehicle Info</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.0/dist/yeti/bootstrap.min.css">
+  <script>
+    window.onload = () => {
+      const dropdown = document.getElementById('customerSelect');
+      dropdown.innerHTML = '';
 
-                    customers.forEach(c => {
-                        const option = document.createElement('option');
-                        option.value = c.customer_id;
-                        option.textContent = c.customer_name;
-                        dropdown.appendChild(option);
-                    });
-                });
+      fetch('/query3/customers')
+        .then(res => res.json())
+        .then(customers => {
+          // Placeholder
+          const placeholder = document.createElement('option');
+          placeholder.disabled = true;
+          placeholder.selected = true;
+          placeholder.textContent = 'Select a customer...';
+          dropdown.appendChild(placeholder);
 
-            // Auto-submit on change
-            document.getElementById('customerSelect').addEventListener('change', function () {
-                const customerId = this.value;
-                const url = customerId ? `/query3?customerId=${customerId}` : '/query3';
-                window.location.href = url;
-            });
-        };
-    </script>
+          // "All Customers" option
+          const allOption = document.createElement('option');
+          allOption.value = 'all';
+          allOption.textContent = '-- All Customers --';
+          dropdown.appendChild(allOption);
+
+          // Real customer options
+          customers.forEach(c => {
+            const option = document.createElement('option');
+            option.value = c.customer_id;
+            option.textContent = c.customer_name;
+            dropdown.appendChild(option);
+          });
+
+          // Redirect on selection
+          dropdown.addEventListener('change', function () {
+            const val = this.value;
+            const url = (val === 'all') ? '/query3' : `/query3?customerId=${val}`;
+            window.location.href = url;
+          });
+        })
+        .catch(error => {
+          console.error('Error loading customer list:', error);
+        });
+    };
+  </script>
 </head>
 
 <body>
-    <div class="container mt-5">
-        <h2 class="text-center mb-4">Customer Vehicle Lookup</h2>
-        <div class="row justify-content-center">
-            <div class="col-md-6">
-                <label for="customerSelect" class="form-label">Select a Customer:</label>
-                <select class="form-select" id="customerSelect">
-                    <option selected disabled>Loading...</option>
-                </select>
-            </div>
-        </div>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container-fluid">
+      <a class="navbar-brand fw-bold" href="index.html"><strong>FixFlow</strong></a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link" href="query1.html">Query 1</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="query2.html">Query 2</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="query3.html">Query 3</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="query4.html">Query 4</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="query5.html">Query 5</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="query6.html">Query 6</a>
+          </li>
+        </ul>
+      </div>
     </div>
+  </nav>
+  <div class="container mt-5">
+    <h1 class="text-center mb-4 fw bold">Customer Vehicle Lookup</h1>
+    <div class="row justify-content-center">
+      <div class="col-md-6">
+        <label for="customerSelect" class="form-label">Select a Customer:</label>
+        <select class="form-select" id="customerSelect">
+        </select>
+      </div>
+    </div>
+  </div>
+  <footer class="bg-light mt-5 py-4">
+    <div class="container text-center">
+      <p class="text-muted">Group 09 - TCSS 445: Database Systems Design &copy; 2025</p>
+    </div>
+  </footer>
 </body>
 
 </html>

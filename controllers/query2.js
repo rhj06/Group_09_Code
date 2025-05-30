@@ -20,12 +20,10 @@ const getCustomersWithMultipleModels = (req, res) => {
   // Step 3: Execute the Query
   db.query(query, (err, results) => {
     if (err) {
-      // Handle Errors
-      console.error('Error executing Query 2:', err);
-      res.status(500).send('Error retrieving data for Query 2');
-    } else {
-      res.json(results);
+      console.error('Error retrieving maintenance records:', err);
+      return res.status(500).json({ error: 'Database query failed' });
     }
+    res.json(results.rows);
   });
 };
 
