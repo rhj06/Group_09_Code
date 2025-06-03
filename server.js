@@ -7,6 +7,9 @@ const query1Controller = require('./controllers/query1');
 const query2Controller = require('./controllers/query2');
 const query3Controller = require('./controllers/query3');
 const query4Controller = require('./controllers/query4');
+const query5Controller = require('./controllers/query5');
+const query6Controller = require('./controllers/query6');
+
 
 
 // Step 3: Middleware Setup
@@ -29,6 +32,9 @@ app.get('/query3/customers', query3Controller.getCustomerList);
 // Setup a GET route for '/query4' that invokes the namesAndPhones method
 // from the query4 controller.
 app.get('/query4', query4Controller.getNamesAndPhones);
+
+app.get('/query5', query5Controller.getCustomerVehicleList)
+app.get('/query6', query6Controller.getMechanicWorkload)
 
 // Step 5: Start the Server
 const PORT = process.env.PORT || 5000;

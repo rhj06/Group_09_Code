@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Query 5 - Customers & Vehicles</title>
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.0/dist/yeti/bootstrap.min.css" />
+</head>
+<body>
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container-fluid">
+        <a class="navbar-brand fw-bold" href="index.html"><strong>FixFlow</strong></a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarNav" aria-controls="navbarNav"
+                aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item"><a class="nav-link" href="query1.html">Query 1</a></li>
+                <li class="nav-item"><a class="nav-link" href="query2.html">Query 2</a></li>
+                <li class="nav-item"><a class="nav-link" href="query3.html">Query 3</a></li>
+                <li class="nav-item"><a class="nav-link" href="query4.html">Query 4</a></li>
+                <li class="nav-item"><a class="nav-link active" aria-current="page"
+                                        href="query5.html">Query 5</a></li>
+                <li class="nav-item"><a class="nav-link" href="query6.html">Query 6</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- Main Content -->
+<div class="container mt-5">
+    <h1 class="text-center mb-4 fw-bold">Customers &amp; Their Vehicles</h1>
+
+    <!-- Optional filter (all / with / without a vehicle) -->
+    <div class="row mb-3 justify-content-center">
+        <div class="col-md-4">
+            <label for="filterSelect" class="form-label fw-bold">Filter list:</label>
+            <select class="form-select" id="filterSelect">
+                <option value="all" selected>All</option>
+                <option value="with">Customers with Vehicles</option>
+                <option value="without">Customers without Vehicles</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-bordered" id="resultsTable">
+            <thead class="table-dark">
+            <tr>
+                <th>Customer</th>
+                <th>Vehicle&nbsp;Make</th>
+                <th>Vehicle&nbsp;Model</th>
+            </tr>
+            </thead>
+            <tbody id="resultsBody"><!-- Filled by JS --></tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Footer -->
+<footer class="bg-light mt-5 py-4">
+    <div class="container text-center">
+        <p class="text-muted">Group 09&nbsp;-&nbsp;TCSS 445: Database Systems Design &copy; 2025</p>
+    </div>
+</footer>
+
+<!-- Inline JavaScript -->
+<script>
+    let fullData = [];
+
+    window.onload = () => {
+        fetch('/query5')
+            .then(res => res.json())
+            .then(rows => {
+                fullData = rows.map(r => ({
+                    ...r,
+                    hasVehicle: r.vehicle_make !== null
+                }));
+                renderTable('all');
+            })
+            .catch(err => {
+                console.error('Error fetching Query 5 data:', err);
+                document.getElementById('resultsBody').innerHTML =
+                    '<tr><td colspan="3" class="text-danger text-center">Error loading data.</td></tr>';
+            });
+
+        document.getElementById('filterSelect')
+            .addEventListener('change', e => renderTable(e.target.value));
+    };
+
+    function renderTable(filter) {
+        const tbody = document.getElementById('resultsBody');
+        tbody.innerHTML = '';
+
+        const filtered = fullData.filter(r =>
+            filter === 'all' ||
+            (filter === 'with' && r.hasVehicle) ||
+            (filter === 'without' && !r.hasVehicle)
+        );
+
+        if (!filtered.length) {
+            tbody.innerHTML =
+                '<tr><td colspan="3" class="text-center">No results for this filter.</td></tr>';
+            return;
+        }
+
+        filtered.forEach(r => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+          <td>${r.customer_name ?? '(No Customer)'}</td>
+          <td>${r.vehicle_make ?? '-'}</td>
+          <td>${r.vehicle_model ?? '-'}</td>
+        `;
+            tbody.appendChild(tr);
+        });
+    }
+</script>
+
+<!-- (Optional) Bootstrap JS for navbar collapse -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
