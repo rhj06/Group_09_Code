@@ -34,7 +34,8 @@ app.get('/query3/customers', query3Controller.getCustomerList);
 app.get('/query4', query4Controller.getNamesAndPhones);
 // Setup a GET route for '/query5' that invokes the getMechanicWorkload method
 app.get('/query5', query5Controller.getMechanicWorkload);
-
+// Setup a POST route for '/query6'
+app.post('/query6', query6Controller.addPartToMaintenanceRecord);
 
 // Step 5: Start the Server
 const PORT = process.env.PORT || 5000;
