@@ -65,30 +65,43 @@
         document.getElementById('query6Form').addEventListener('submit', function (e) {
             e.preventDefault();
 
-            const rec_id = document.getElementById('rec_id').value;
-            const part_id = document.getElementById('part_id').value;
-            const quantity = document.getElementById('quantity').value;
+            const rec_id = parseInt(document.getElementById('rec_id').value);
+            const part_id = parseInt(document.getElementById('part_id').value);
+            const quantity = parseInt(document.getElementById('quantity').value);
 
             fetch('/query6', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ rec_id, part_id, quantity })
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ rec_id, part_id, quantity })
+        })
+            .then(async res => {
+                const resultDiv = document.getElementById('resultMessage');
+
+                let data;
+                try {
+                    data = await res.json();
+                } catch (err) {
+                    const text = await res.text();
+                    console.error('Server returned non-JSON response:', text);
+                    resultDiv.innerHTML =
+                        `<div class="alert alert-danger"> Server error. Response was not JSON. Check terminal logs or backend code.</div>`;
+                    return;
+                }
+
+                if (data.status === 'success') {
+                    resultDiv.innerHTML = `<div class="alert alert-success">${data.message}</div>`;
+                    document.getElementById('query6Form').reset();
+                } else {
+                    resultDiv.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+                }
             })
-                .then(res => res.json())
-                .then(data => {
-                    const resultDiv = document.getElementById('resultMessage');
-                    if (data.status === 'success') {
-                        resultDiv.innerHTML = `<div class="alert alert-success">${data.message}</div>`;
-                    } else {
-                        resultDiv.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
-                    }
-                })
-                .catch(err => {
-                    console.error('Error submitting Query 6:', err);
-                    document.getElementById('resultMessage').innerHTML =
-                        `<div class="alert alert-danger">An error occurred while processing your request.</div>`;
-                });
-        });
+            .catch(err => {
+                console.error('Error submitting Query 6:', err);
+                document.getElementById('resultMessage').innerHTML =
+                    `<div class="alert alert-danger"> A network or server error occurred. Check the console for details.</div>`;
+            });
+    });
+
     </script>
 
     <!-- Bootstrap JS (navbar toggle) -->

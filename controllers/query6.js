@@ -8,22 +8,24 @@ const db = require('../dbConfig');
 const addPartToMaintenanceRecord = async (req, res) => {
     const { rec_id, part_id, quantity } = req.body;
 
-    const client = await db.connect();
+    if (!rec_id || !part_id || !quantity) {
+        return res.status(400).json({ error: 'Missing required input fields.' });
+    }
 
     try {
         // Step 2: Begin transaction
-        await client.query('BEGIN');
+        await db.query('BEGIN');
 
-        // Step 3: Insert the part into PART_USED
-        await client.query(
-            `INSERT INTO PART_USED (rec_id, part_id, quantity)
+        // Step 3: Insert the part into part_used
+        await db.query(
+            `INSERT INTO part_used (record_id, part_id, quantity)
              VALUES ($1, $2, $3)`,
             [rec_id, part_id, quantity]
         );
 
-        // Step 4: Retrieve the unit cost from PART
-        const result = await client.query(
-            `SELECT unit_cost FROM PART WHERE part_id = $1`,
+        // Step 4: Get unit cost of the part
+        const result = await db.query(
+            `SELECT unit_cost, part_type FROM part WHERE part_id = $1`,
             [part_id]
         );
 
@@ -31,35 +33,47 @@ const addPartToMaintenanceRecord = async (req, res) => {
             throw new Error('Part not found: invalid part_id');
         }
 
-        const addedCost = result.rows[0].unit_cost * quantity;
+        const addedCost = parseFloat(result.rows[0].unit_cost) * quantity;
+        const partType = result.rows[0].part_type;
 
-        // Step 5: Update MAINTENANCE_RECORD with new costs
-        await client.query(
-            `UPDATE MAINTENANCE_RECORD
-             SET part_cost = part_cost + $1,
-                 total_cost = labor_cost + part_cost + $1
-             WHERE record_id = $2`,
-            [addedCost, rec_id]
+        // Step 5: Get current labor and part cost
+        const recordResult = await db.query(
+            `SELECT labor_cost, part_cost FROM maintenance_record WHERE record_id = $1`,
+            [rec_id]
         );
 
-        // Step 6: Commit transaction
-        await client.query('COMMIT');
+        if (recordResult.rowCount === 0) {
+            throw new Error('Maintenance record not found: invalid rec_id');
+        }
+
+        const currentPartCost = parseFloat(recordResult.rows[0].part_cost);
+        const newPartCost = currentPartCost + addedCost;
+
+
+        // Step 6: Update maintenance_record with new costs
+        await db.query(
+            `UPDATE maintenance_record
+             SET part_cost = $1
+             WHERE record_id = $2`,
+            [newPartCost, rec_id]
+        );
+
+
+        // Step 7: Commit transaction
+        await db.query('COMMIT');
         res.status(200).json({
-            message: `Part ${part_id} (x${quantity}) added to maintenance record ${rec_id}.`,
+            message: `${partType} (x${quantity}) added to maintenance record ${rec_id}.`,
             status: 'success'
         });
 
     } catch (error) {
-        // Step 7: Rollback if error occurs
-        await client.query('ROLLBACK');
+        await db.query('ROLLBACK');
         console.error('Query 6 error (transaction failed):', error.message);
         res.status(500).json({ error: 'Transaction failed: ' + error.message });
-    } finally {
-        client.release();
     }
 };
 
-// Step 8: Export the controller
+// Step 8: Export the function
 module.exports = {
     addPartToMaintenanceRecord
 };
